@@ -1,0 +1,166 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $users = User::all();
+
+        return response()->json([
+            'status' => true,
+            'data' => $users
+        ], 200);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|max:255|unique:users',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'bio' => 'nullable|string',
+            'profile_picture' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'role' => 'nullable|in:user,admin,moderator',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::create([
+            'username' => $request->username,
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'bio' => $request->bio,
+            'profile_picture' => $request->profile_picture,
+            'phone_number' => $request->phone_number,
+            'role' => $request->role ?? 'user',
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User created successfully',
+            'data' => $user
+        ], 201);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $user = User::findOrFail($id);
+
+        return response()->json([
+            'status' => true,
+            'data' => $user
+        ], 200);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'username' => 'nullable|string|max:255|unique:users,username,' . $id,
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|string|email|max:255|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8',
+            'bio' => 'nullable|string',
+            'profile_picture' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'role' => 'nullable|in:user,admin,moderator',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->has('username')) {
+            $user->username = $request->username;
+        }
+
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
+
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        if ($request->has('bio')) {
+            $user->bio = $request->bio;
+        }
+
+        if ($request->has('profile_picture')) {
+            $user->profile_picture = $request->profile_picture;
+        }
+
+        if ($request->has('phone_number')) {
+            $user->phone_number = $request->phone_number;
+        }
+
+        if ($request->has('role')) {
+            $user->role = $request->role;
+        }
+
+        if ($request->has('is_active')) {
+            $user->is_active = $request->is_active;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User updated successfully',
+            'data' => $user
+        ], 200);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User deleted successfully'
+        ], 200);
+    }
+}
