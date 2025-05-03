@@ -15,6 +15,10 @@ use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\ReadingHistoryController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\Api\EmailController;
+use App\Http\Controllers\Api\EmailVerificationController;
+use App\Http\Middleware\EnsureEmailIsVerified;
+
+
 
 
 /*
@@ -27,6 +31,8 @@ use App\Http\Controllers\Api\EmailController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+//Untuk send kode otp / verifikasi email
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -68,11 +74,23 @@ Route::get('/novels/{novelId}/reviews/{reviewId}', [ReviewController::class, 'sh
 Route::get('/reviews/{reviewId}/comments', [CommentController::class, 'index']);
 Route::get('/reviews/{reviewId}/comments/{commentId}', [CommentController::class, 'show']);
 
-// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
+    Route::post('send-otp-manually/{user}', [EmailVerificationController::class, 'sendOtpManually']); // Kirim OTP manual
+    Route::post('verify-otp', [EmailVerificationController::class, 'verifyOtp']); // Verifikasi OTP
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::post('send-otp', [EmailVerificationController::class, 'sendOtp']); // Kirim OTP
+
+
+});
+
+// Protected routes
+Route::middleware('auth:sanctum', EnsureEmailIsVerified::class)->group(function () {
+
+    // Auth
+    // Route::post('/logout', [AuthController::class, 'logout']);
+    // Route::get('/user', [AuthController::class, 'user']);
 
     // Users
     Route::apiResource('users', UserController::class);

@@ -14,7 +14,7 @@ class NovelController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Novel::with(['author', 'category', 'favorites.user']);
+        $query = Novel::with(['author', 'category', 'favorites.user' ,'reviews.user']);
 
         // Filter by category
         if ($request->has('category_id')) {

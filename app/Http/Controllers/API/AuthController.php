@@ -41,14 +41,20 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        $isVerified = !is_null($user->email_verified_at); // <--- tambahkan ini
         $token = $user->createToken('auth_token')->plainTextToken;
+        // untuk kirim verifikasi email
+        app(EmailVerificationController::class)->sendOtpManually($user);
+
+
 
         return response()->json([
             'status' => true,
             'message' => 'User registered successfully',
             'data' => [
                 'user' => $user,
-                'token' => $token
+                'token' => $token,
+                'is_verified' => $isVerified
             ]
         ], 201);
     }
@@ -82,14 +88,18 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->firstOrFail();
+        $user->tokens()->delete(); // 🔥 Hapus token-token lama
         $token = $user->createToken('auth_token')->plainTextToken;
+        $isVerified = !is_null($user->email_verified_at);
+
 
         return response()->json([
             'status' => true,
             'message' => 'User logged in successfully',
             'data' => [
                 'user' => $user,
-                'token' => $token
+                'token' => $token,
+                'is_verified' => $isVerified
             ]
         ], 200);
     }
