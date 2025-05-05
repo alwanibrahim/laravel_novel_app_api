@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Models\EmailVerification;
+use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Mail;
+
 
 
 class UserController extends Controller
@@ -210,5 +214,51 @@ class UserController extends Controller
             'login' => $loginData,
             'register' => $registerData,
         ]);
+    }
+
+    //send otp
+    public function sendOtp(Request $request)
+    {
+        $user = $request->user();
+
+        $configValues = [
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+            'password' => substr(config('mail.mailers.smtp.password'), 0, 3) . '...'
+        ];
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Email sudah diverifikasi']);
+        }
+
+        // Cek kalau baru saja kirim OTP
+        $verif = EmailVerification::where('email', $user->email)->first();
+        if ($verif && $verif->updated_at->diffInSeconds(now()) < 60) {
+            return response()->json([
+                'message' => 'Tunggu sebentar sebelum meminta OTP lagi.',
+            ], 429);
+        }
+
+        $otp = rand(100000, 999999);
+
+        EmailVerification::updateOrCreate(
+            ['email' => $user->email],
+            ['otp' => $otp, 'expires_at' => now()->addMinutes(10)]
+        );
+
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp));
+
+            return response()->json([
+                'message' => 'Kode OTP berhasil dikirim',
+                'debug_info' => $configValues
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengirim OTP: ' . $e->getMessage(),
+                'debug_info' => $configValues
+            ], 500);
+        }
     }
 }

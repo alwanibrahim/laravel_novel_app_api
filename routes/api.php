@@ -86,7 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('verify-otp', [EmailVerificationController::class, 'verifyOtp']); // Verifikasi OTP
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('send-otp', [EmailVerificationController::class, 'sendOtp']); // Kirim OTP
+    Route::post('send-otp', [UserController::class, 'sendOtp']); // Kirim OTP
     Route::get('/user-activity-summary', [UserController::class, 'summary']);
 });
 
