@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use App\Models\EmailVerification;
 use App\Mail\OtpMail;
-use Illuminate\Support\Facades\Mail;
+use SendGrid;
+use SendGrid\Mail\Mail;
 
 
 
@@ -217,16 +218,11 @@ class UserController extends Controller
     }
 
     //send otp
+
+
     public function sendOtp(Request $request)
     {
         $user = $request->user();
-
-        $configValues = [
-            'host' => config('mail.mailers.smtp.host'),
-            'port' => config('mail.mailers.smtp.port'),
-            'username' => config('mail.mailers.smtp.username'),
-            'password' => substr(config('mail.mailers.smtp.password'), 0, 3) . '...'
-        ];
 
         if ($user->email_verified_at) {
             return response()->json(['message' => 'Email sudah diverifikasi']);
@@ -248,19 +244,31 @@ class UserController extends Controller
         );
 
         try {
-            Mail::to($user->email)->send(new OtpMail($otp));
+            $email = new Mail();
+            $email->setFrom("youremail@example.com", "Nama Aplikasi");
+            $email->setSubject("Kode OTP Kamu");
+            $email->addTo($user->email);
+            $email->addContent(
+                "text/plain",
+                "Kode OTP kamu adalah: $otp"
+            );
+
+            $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+            $response = $sendgrid->send($email);
 
             return response()->json([
-                'message' => 'Kode OTP berhasil dikirim',
-                'debug_info' => $configValues
+                'message' => 'Kode OTP berhasil dikirim (via SendGrid)',
+                'status' => $response->statusCode(),
             ]);
         } catch (\Exception $e) {
+            Log::error("SendGrid Error: " . $e->getMessage());
+
             return response()->json([
-                'message' => 'Gagal mengirim OTP: ' . $e->getMessage(),
-                'debug_info' => $configValues
+                'message' => 'Gagal mengirim OTP via SendGrid: ' . $e->getMessage(),
             ], 500);
         }
     }
+
 
     public function verifyOtp(Request $request)
     {
