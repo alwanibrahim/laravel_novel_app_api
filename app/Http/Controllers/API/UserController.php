@@ -228,7 +228,6 @@ class UserController extends Controller
             return response()->json(['message' => 'Email sudah diverifikasi']);
         }
 
-        // Cek kalau baru saja kirim OTP
         $verif = EmailVerification::where('email', $user->email)->first();
         if ($verif && $verif->updated_at->diffInSeconds(now()) < 60) {
             return response()->json([
@@ -248,27 +247,21 @@ class UserController extends Controller
             $email->setFrom("youremail@example.com", "Nama Aplikasi");
             $email->setSubject("Kode OTP Kamu");
             $email->addTo($user->email);
-            $email->addContent(
-                "text/plain",
-                "Kode OTP kamu adalah: $otp"
-            );
+            $email->addContent("text/plain", "Kode OTP kamu adalah: $otp");
 
-            $sendgrid = new \SendGrid(env('SENDGRID_API_KEY'));
+            $sendgrid = new SendGrid(env('SENDGRID_API_KEY'));
             $response = $sendgrid->send($email);
 
             return response()->json([
-                'message' => 'Kode OTP berhasil dikirim (via SendGrid)',
-                'status' => $response->statusCode(),
+                'message' => 'Kode OTP berhasil dikirim',
             ]);
         } catch (\Exception $e) {
-            Log::error("SendGrid Error: " . $e->getMessage());
-
             return response()->json([
-                'message' => 'Gagal mengirim OTP via SendGrid: ' . $e->getMessage(),
+                'message' => 'Gagal mengirim OTP: ' . $e->getMessage(),
             ], 500);
         }
     }
-//
+
 
     public function verifyOtp(Request $request)
     {
