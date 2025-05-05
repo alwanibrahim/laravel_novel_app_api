@@ -37,6 +37,12 @@ use App\Http\Middleware\EnsureEmailIsVerified;
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::prefix('auth')->group(function () {
+    Route::get('google', [AuthController::class, 'redirectToGoogle']);
+    Route::get('google/callback', [AuthController::class, 'handleGoogleCallback']);
+});
+
+
 
 // Novels
 Route::get('/novels', [NovelController::class, 'index']);
@@ -81,8 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('send-otp', [EmailVerificationController::class, 'sendOtp']); // Kirim OTP
-
-
+    Route::get('/user-activity-summary', [UserController::class, 'summary']);
 });
 
 // Protected routes
@@ -154,7 +159,7 @@ Route::middleware('auth:sanctum', EnsureEmailIsVerified::class)->group(function 
     Route::delete('/notifications', [NotificationController::class, 'destroyAll']);
 
 
-    Route::get('/users', [EmailController::class, 'getAllUsers']);
+    // Route::get('/users', [EmailController::class, 'getAllUsers']);
     Route::post('/send-email', [EmailController::class, 'sendEmailToUsers']);
     Route::post('/send-email-all', [EmailController::class, 'sendEmailToAllUsers']);
 });

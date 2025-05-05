@@ -14,49 +14,51 @@ use App\Models\User;
 class EmailVerificationController extends Controller
 {
     // Fungsi untuk mengirim OTP ke email
-   public function sendOtp(Request $request)
-{
-    $user = $request->user();
+    public function sendOtp(Request $request)
+    {
+        $user = $request->user();
 
-    // Tambahkan kode debugging untuk melihat konfigurasi email yang digunakan
-    $configValues = [
-        'host' => config('mail.mailers.smtp.host'),
-        'port' => config('mail.mailers.smtp.port'),
-        'username' => config('mail.mailers.smtp.username'),
-        'password' => substr(config('mail.mailers.smtp.password'), 0, 3) . '...'
-    ];
+        $configValues = [
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+            'password' => substr(config('mail.mailers.smtp.password'), 0, 3) . '...'
+        ];
 
-    // Cek jika email sudah terverifikasi
-    if ($user->email_verified_at) {
-        return response()->json(['message' => 'Email sudah diverifikasi']);
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Email sudah diverifikasi']);
+        }
+
+        // Cek kalau baru saja kirim OTP
+        $verif = EmailVerification::where('email', $user->email)->first();
+        if ($verif && $verif->updated_at->diffInSeconds(now()) < 60) {
+            return response()->json([
+                'message' => 'Tunggu sebentar sebelum meminta OTP lagi.',
+            ], 429);
+        }
+
+        $otp = rand(100000, 999999);
+
+        EmailVerification::updateOrCreate(
+            ['email' => $user->email],
+            ['otp' => $otp, 'expires_at' => now()->addMinutes(10)]
+        );
+
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp));
+
+            return response()->json([
+                'message' => 'Kode OTP berhasil dikirim',
+                'debug_info' => $configValues
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengirim OTP: ' . $e->getMessage(),
+                'debug_info' => $configValues
+            ], 500);
+        }
     }
 
-    // Generate OTP
-    $otp = rand(100000, 999999);
-
-    // Simpan OTP ke tabel email_verifications (bukan otp_codes)
-    EmailVerification::updateOrCreate(
-        ['email' => $user->email],
-        ['otp' => $otp, 'expires_at' => now()->addMinutes(10)]
-    );
-
-    try {
-        // Kirim OTP ke email
-        Mail::raw("Kode OTP Anda: $otp", function ($message) use ($user) {
-            $message->to($user->email)->subject('Kode OTP Verifikasi Email');
-        });
-
-        return response()->json([
-            'message' => 'Kode OTP berhasil dikirim',
-            'debug_info' => $configValues  // Hanya tampilkan saat development
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Gagal mengirim OTP: ' . $e->getMessage(),
-            'debug_info' => $configValues  // Hanya tampilkan saat development
-        ], 500);
-    }
-}
 
     public function verifyOtp(Request $request)
     {

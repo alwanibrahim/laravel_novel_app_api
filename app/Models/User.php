@@ -27,6 +27,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone_number',
         'role',
         'is_active',
+        'last_login_at', // Pastikan ini ada jika pakai fillable
+
     ];
 
     /**
@@ -94,4 +96,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(OtpCode::class);
     }
+
+
+
 }

@@ -91,6 +91,14 @@ class AuthController extends Controller
         $user->tokens()->delete(); // 🔥 Hapus token-token lama
         $token = $user->createToken('auth_token')->plainTextToken;
         $isVerified = !is_null($user->email_verified_at);
+        $updated = $user->update([
+            'last_login_at' => now()
+        ]);
+
+        if (!$updated) {
+            logger()->error('Gagal update last_login_at');
+        }
+
 
 
         return response()->json([

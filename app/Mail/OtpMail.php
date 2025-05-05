@@ -20,6 +20,6 @@ class OtpMail extends Mailable
     public function build()
     {
         return $this->subject('Your OTP Code')
-            ->html('<p>Your OTP code is: <strong>' . $this->otp . '</strong></p><p>This code will expire in 10 minutes.</p>');
+            ->view('emails.otp'); // Panggil Blade view
     }
 }

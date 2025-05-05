@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
+
 
 class UserController extends Controller
 {
@@ -162,5 +164,51 @@ class UserController extends Controller
             'status' => true,
             'message' => 'User deleted successfully'
         ], 200);
+    }
+
+    //untuk diagram
+    public function summary(Request $request)
+    {
+        $range = $request->query('range', '30days'); // default 30 days
+
+        $days = 30;
+        if (preg_match('/(\d+)days/', $range, $matches)) {
+            $days = (int) $matches[1];
+        }
+
+        $startDate = Carbon::now()->subDays($days - 1)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        // Ambil user yang register dalam range waktu
+        $registers = User::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date');
+
+        // Ambil user yang login (dengan asumsi kamu menyimpan last_login_at)
+        $logins = User::whereBetween('last_login_at', [$startDate, $endDate])
+            ->selectRaw('DATE(last_login_at) as date, COUNT(*) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date');
+
+        // Format untuk grafik
+        $labels = [];
+        $loginData = [];
+        $registerData = [];
+
+        for ($i = 0; $i < $days; $i++) {
+            $date = $startDate->copy()->addDays($i)->toDateString();
+            $labels[] = $date;
+            $loginData[] = $logins[$date] ?? 0;
+            $registerData[] = $registers[$date] ?? 0;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'login' => $loginData,
+            'register' => $registerData,
+        ]);
     }
 }
