@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\EmailVerification;
 use App\Models\OtpCode;
 use App\Mail\OtpMail;
-use App\Models\User;
+use App\Models\User;//aman
 
 class EmailVerificationController extends Controller
 {
