@@ -261,4 +261,53 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function verifyOtp(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User tidak ditemukan atau belum login'], 400);
+        }
+
+        // Tambahkan untuk debugging
+        $configValues = [
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+            'password' => substr(config('mail.mailers.smtp.password'), 0, 3) . '...'
+        ];
+
+        // Lanjutkan proses verifikasi OTP
+        $request->validate([
+            'otp' => 'required|numeric'
+        ]);
+
+        // Cek OTP - pastikan model yang digunakan konsisten
+        $otp = $request->input('otp');
+
+        // Jika menggunakan EmailVerification model (sesuai dengan sendOtpVerification)
+        $verification = EmailVerification::where('email', $user->email)
+            ->where('otp', $otp)
+            ->where('expires_at', '>', now())
+            ->first();
+
+
+        if (!$verification) {
+            return response()->json(['message' => 'OTP salah atau kadaluarsa'], 400);
+        }
+
+        // Update user dan set email_verified_at dan is_verified
+        $user->email_verified_at = now();
+        $user->is_verified = true;  // Kolom ini harus ada di tabel users
+        $user->save();
+
+        $user->refresh();
+        $verification->delete();
+
+        return response()->json([
+            'message' => 'Email berhasil diverifikasi',
+            'user' => $user
+        ]);
+    }
 }

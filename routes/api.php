@@ -83,7 +83,7 @@ Route::get('/reviews/{reviewId}/comments/{commentId}', [CommentController::class
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('send-otp-manually/{user}', [EmailVerificationController::class, 'sendOtpManually']); // Kirim OTP manual
-    Route::post('verify-otp', [EmailVerificationController::class, 'verifyOtp']); // Verifikasi OTP
+    Route::post('verify-otp', [UserController::class, 'verifyOtp']); // Verifikasi OTP
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('send-otp', [UserController::class, 'sendOtp']); // Kirim OTP
