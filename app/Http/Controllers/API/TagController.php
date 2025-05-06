@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tag;
@@ -15,7 +15,7 @@ class TagController extends Controller
     public function index()
     {
         $tags = Tag::all();
-        
+
         return response()->json([
             'status' => true,
             'data' => $tags
@@ -55,7 +55,7 @@ class TagController extends Controller
     public function show(string $id)
     {
         $tag = Tag::findOrFail($id);
-        
+
         return response()->json([
             'status' => true,
             'data' => $tag
@@ -68,7 +68,7 @@ class TagController extends Controller
     public function update(Request $request, string $id)
     {
         $tag = Tag::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255|unique:tags,name,' . $id,
             'description' => 'nullable|string',
@@ -98,13 +98,13 @@ class TagController extends Controller
     {
         $tag = Tag::findOrFail($id);
         $tag->delete();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Tag deleted successfully'
         ], 200);
     }
-    
+
     /**
      * Get novels by tag.
      */
@@ -112,7 +112,7 @@ class TagController extends Controller
     {
         $tag = Tag::findOrFail($id);
         $novels = $tag->novels()->with(['author', 'category'])->get();
-        
+
         return response()->json([
             'status' => true,
             'data' => $novels

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Favorite;
@@ -16,7 +16,7 @@ class FavoriteController extends Controller
     public function index()
     {
         $favorites = Auth::user()->favorites()->with('novel.author')->get();
-        
+
         return response()->json([
             'status' => true,
             'data' => $favorites
@@ -29,12 +29,12 @@ class FavoriteController extends Controller
     public function store(string $novelId)
     {
         $novel = Novel::findOrFail($novelId);
-        
+
         // Check if already favorited
         $existingFavorite = Favorite::where('user_id', Auth::id())
             ->where('novel_id', $novel->id)
             ->first();
-            
+
         if ($existingFavorite) {
             return response()->json([
                 'status' => false,
@@ -63,7 +63,7 @@ class FavoriteController extends Controller
         $favorite = Favorite::where('user_id', Auth::id())
             ->where('novel_id', $novelId)
             ->firstOrFail();
-            
+
         $favorite->delete();
 
         return response()->json([
@@ -80,7 +80,7 @@ class FavoriteController extends Controller
         $isFavorite = Favorite::where('user_id', Auth::id())
             ->where('novel_id', $novelId)
             ->exists();
-            
+
         return response()->json([
             'status' => true,
             'data' => [

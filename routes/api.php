@@ -2,20 +2,21 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\NovelController;
-use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\API\AuthorController;
-use App\Http\Controllers\API\ChapterController;
-use App\Http\Controllers\API\ReviewController;
-use App\Http\Controllers\API\CommentController;
-use App\Http\Controllers\API\FavoriteController;
-use App\Http\Controllers\API\TagController;
-use App\Http\Controllers\API\ReadingHistoryController;
-use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\NovelController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\AuthorController;
+use App\Http\Controllers\Api\ChapterController;
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\ReadingHistoryController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\EmailVerificationController;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Middleware\EnsureEmailIsVerified;
 
 
@@ -23,16 +24,24 @@ use App\Http\Middleware\EnsureEmailIsVerified;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| Api Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
+| Here is where you can register Api routes for your application. These
 | routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
+| be assigned to the "Api" middleware group. Make something great!
 |
 */
 
 //Untuk send kode otp / verifikasi email
+Route::get('/test-email', function () {
+    Mail::raw('Ini adalah email percobaan dari Brevo SMTP.', function ($message) {
+        $message->to('mamammewing@gmail.com')
+            ->subject('Tes Kirim Email');
+    });
+
+    return 'Email terkirim!';
+});
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -82,11 +91,11 @@ Route::get('/reviews/{reviewId}/comments/{commentId}', [CommentController::class
 
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
+    Route::post('send-otp', [UserController::class, 'sendOtp']); // Kirim OTP
     Route::post('send-otp-manually/{user}', [EmailVerificationController::class, 'sendOtpManually']); // Kirim OTP manual
     Route::post('verify-otp', [UserController::class, 'verifyOtp']); // Verifikasi OTP
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('send-otp', [UserController::class, 'sendOtp']); // Kirim OTP
     Route::get('/user-activity-summary', [UserController::class, 'summary']);
 });
 
@@ -98,7 +107,7 @@ Route::middleware('auth:sanctum', EnsureEmailIsVerified::class)->group(function 
     // Route::get('/user', [AuthController::class, 'user']);
 
     // Users
-    Route::apiResource('users', UserController::class);
+    Route::ApiResource('users', UserController::class);
 
     // Novels (protected actions)
     Route::post('/novels', [NovelController::class, 'store']);

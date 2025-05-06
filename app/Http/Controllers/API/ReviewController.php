@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Novel;
@@ -18,7 +18,7 @@ class ReviewController extends Controller
     {
         $novel = Novel::findOrFail($novelId);
         $reviews = $novel->reviews()->with('user')->get();
-        
+
         return response()->json([
             'status' => true,
             'data' => $reviews
@@ -31,7 +31,7 @@ class ReviewController extends Controller
     public function store(Request $request, string $novelId)
     {
         $novel = Novel::findOrFail($novelId);
-        
+
         $validator = Validator::make($request->all(), [
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
@@ -50,7 +50,7 @@ class ReviewController extends Controller
         $existingReview = Review::where('user_id', Auth::id())
             ->where('novel_id', $novel->id)
             ->first();
-            
+
         if ($existingReview) {
             return response()->json([
                 'status' => false,
@@ -62,9 +62,9 @@ class ReviewController extends Controller
         $data = $request->all();
         $data['user_id'] = Auth::id();
         $data['novel_id'] = $novel->id;
-        
+
         $review = Review::create($data);
-        
+
         // Update novel's average rating
         $this->updateNovelAverageRating($novel);
 
@@ -82,7 +82,7 @@ class ReviewController extends Controller
     {
         $novel = Novel::findOrFail($novelId);
         $review = $novel->reviews()->with(['user', 'comments.user'])->findOrFail($reviewId);
-        
+
         return response()->json([
             'status' => true,
             'data' => $review
@@ -96,7 +96,7 @@ class ReviewController extends Controller
     {
         $novel = Novel::findOrFail($novelId);
         $review = $novel->reviews()->findOrFail($reviewId);
-        
+
         // Check if the authenticated user is the owner of the review
         if ($review->user_id !== Auth::id()) {
             return response()->json([
@@ -104,7 +104,7 @@ class ReviewController extends Controller
                 'message' => 'You are not authorized to update this review'
             ], 403);
         }
-        
+
         $validator = Validator::make($request->all(), [
             'rating' => 'nullable|integer|min:1|max:5',
             'comment' => 'nullable|string',
@@ -120,7 +120,7 @@ class ReviewController extends Controller
         }
 
         $review->update($request->all());
-        
+
         // Update novel's average rating
         $this->updateNovelAverageRating($novel);
 
@@ -138,7 +138,7 @@ class ReviewController extends Controller
     {
         $novel = Novel::findOrFail($novelId);
         $review = $novel->reviews()->findOrFail($reviewId);
-        
+
         // Check if the authenticated user is the owner of the review or an admin
         if ($review->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
             return response()->json([
@@ -146,18 +146,18 @@ class ReviewController extends Controller
                 'message' => 'You are not authorized to delete this review'
             ], 403);
         }
-        
+
         $review->delete();
-        
+
         // Update novel's average rating
         $this->updateNovelAverageRating($novel);
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Review deleted successfully'
         ], 200);
     }
-    
+
     /**
      * Like a review.
      */
@@ -165,9 +165,9 @@ class ReviewController extends Controller
     {
         $novel = Novel::findOrFail($novelId);
         $review = $novel->reviews()->findOrFail($reviewId);
-        
+
         $review->increment('likes_count');
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Review liked successfully',
@@ -176,7 +176,7 @@ class ReviewController extends Controller
             ]
         ], 200);
     }
-    
+
     /**
      * Update novel's average rating.
      */

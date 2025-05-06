@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
@@ -17,7 +17,7 @@ class NotificationController extends Controller
         $notifications = Auth::user()->notifications()
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return response()->json([
             'status' => true,
             'data' => $notifications
@@ -31,10 +31,10 @@ class NotificationController extends Controller
     {
         $notification = Notification::where('user_id', Auth::id())
             ->findOrFail($id);
-            
+
         $notification->is_read = true;
         $notification->save();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Notification marked as read',
@@ -50,7 +50,7 @@ class NotificationController extends Controller
         Notification::where('user_id', Auth::id())
             ->where('is_read', false)
             ->update(['is_read' => true]);
-            
+
         return response()->json([
             'status' => true,
             'message' => 'All notifications marked as read'
@@ -65,7 +65,7 @@ class NotificationController extends Controller
         $count = Notification::where('user_id', Auth::id())
             ->where('is_read', false)
             ->count();
-            
+
         return response()->json([
             'status' => true,
             'data' => [
@@ -81,9 +81,9 @@ class NotificationController extends Controller
     {
         $notification = Notification::where('user_id', Auth::id())
             ->findOrFail($id);
-            
+
         $notification->delete();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Notification deleted successfully'
@@ -96,7 +96,7 @@ class NotificationController extends Controller
     public function destroyAll()
     {
         Notification::where('user_id', Auth::id())->delete();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'All notifications deleted successfully'

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use App\Models\EmailVerification;
-use App\Mail\OtpMail;
-use SendGrid;
-use SendGrid\Mail\Mail;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\OtpNotification;
+use Illuminate\Support\Facades\Mail; // Pastikan baris ini ada
 
 
 
@@ -222,90 +222,73 @@ class UserController extends Controller
 
     public function sendOtp(Request $request)
     {
-        $user = $request->user();
-
-        if ($user->email_verified_at) {
-            return response()->json(['message' => 'Email sudah diverifikasi']);
-        }
-
-        $verif = EmailVerification::where('email', $user->email)->first();
-        if ($verif && $verif->updated_at->diffInSeconds(now()) < 60) {
-            return response()->json([
-                'message' => 'Tunggu sebentar sebelum meminta OTP lagi.',
-            ], 429);
-        }
-
-        $otp = rand(100000, 999999);
-
-        EmailVerification::updateOrCreate(
-            ['email' => $user->email],
-            ['otp' => $otp, 'expires_at' => now()->addMinutes(10)]
-        );
-
-        try {
-            $email = new Mail();
-            $email->setFrom("youremail@example.com", "Nama Aplikasi");
-            $email->setSubject("Kode OTP Kamu");
-            $email->addTo($user->email);
-            $email->addContent("text/plain", "Kode OTP kamu adalah: $otp");
-
-            $sendgrid = new SendGrid(env('SENDGRID_API_KEY'));
-            $response = $sendgrid->send($email);
-
-            return response()->json([
-                'message' => 'Kode OTP berhasil dikirim',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Gagal mengirim OTP: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-
-    public function verifyOtp(Request $request)
-    {
+        // Pastikan user sudah terautentikasi
         $user = $request->user();
 
         if (!$user) {
             return response()->json(['message' => 'User tidak ditemukan atau belum login'], 400);
         }
 
-        // Tambahkan untuk debugging
-        $configValues = [
-            'host' => config('mail.mailers.smtp.host'),
-            'port' => config('mail.mailers.smtp.port'),
-            'username' => config('mail.mailers.smtp.username'),
-            'password' => substr(config('mail.mailers.smtp.password'), 0, 3) . '...'
-        ];
 
-        // Lanjutkan proses verifikasi OTP
+        // Validasi email (bisa menggunakan email dari user yang terautentikasi)
+        $request->validate(['email' => 'required|email']);
+
+        $otp = rand(100000, 999999); // OTP 6 digit
+        $email = $request->email;
+
+        // Simpan atau update OTP di database menggunakan updateOrCreate
+        EmailVerification::updateOrCreate(
+            ['email' => $email],  // Kondisi pencarian berdasarkan email
+            ['otp' => $otp, 'expires_at' => now()->addMinutes(10)]  // Data yang diupdate atau dibuat baru
+        );
+
+        // Kirim email dengan OTP
+        Notification::route('mail', $email)->notify(new OtpNotification($otp));
+
+        return response()->json(['message' => 'OTP berhasil dikirim']);
+    }
+
+
+    public function verifyOtp(Request $request)
+    {
+        // Ambil user yang terautentikasi
+        $user = $request->user();
+
+        // Pastikan user sudah terautentikasi
+        if (!$user) {
+            return response()->json(['message' => 'User tidak ditemukan atau belum login'], 400);
+        }
+
+        // Validasi input OTP
         $request->validate([
             'otp' => 'required|numeric'
         ]);
 
-        // Cek OTP - pastikan model yang digunakan konsisten
+        // Ambil OTP yang dikirimkan
         $otp = $request->input('otp');
 
-        // Jika menggunakan EmailVerification model (sesuai dengan sendOtpVerification)
+        // Cek apakah OTP valid dan belum kadaluarsa
         $verification = EmailVerification::where('email', $user->email)
             ->where('otp', $otp)
-            ->where('expires_at', '>', now())
+            ->where('expires_at', '>', now())  // Pastikan OTP belum kadaluarsa
             ->first();
-
 
         if (!$verification) {
             return response()->json(['message' => 'OTP salah atau kadaluarsa'], 400);
         }
 
-        // Update user dan set email_verified_at dan is_verified
+        // Update status email user
         $user->email_verified_at = now();
         $user->is_verified = true;  // Kolom ini harus ada di tabel users
         $user->save();
 
+        // Refresh user untuk memastikan status terbaru
         $user->refresh();
+
+        // Hapus data OTP setelah verifikasi sukses
         $verification->delete();
 
+        // Kembalikan response sukses
         return response()->json([
             'message' => 'Email berhasil diverifikasi',
             'user' => $user

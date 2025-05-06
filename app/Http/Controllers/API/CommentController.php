@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
@@ -18,7 +18,7 @@ class CommentController extends Controller
     {
         $review = Review::findOrFail($reviewId);
         $comments = $review->comments()->with('user')->get();
-        
+
         return response()->json([
             'status' => true,
             'data' => $comments
@@ -31,7 +31,7 @@ class CommentController extends Controller
     public function store(Request $request, string $reviewId)
     {
         $review = Review::findOrFail($reviewId);
-        
+
         $validator = Validator::make($request->all(), [
             'content' => 'required|string',
         ]);
@@ -47,7 +47,7 @@ class CommentController extends Controller
         $data = $request->all();
         $data['user_id'] = Auth::id();
         $data['review_id'] = $review->id;
-        
+
         $comment = Comment::create($data);
 
         return response()->json([
@@ -64,7 +64,7 @@ class CommentController extends Controller
     {
         $review = Review::findOrFail($reviewId);
         $comment = $review->comments()->with('user')->findOrFail($commentId);
-        
+
         return response()->json([
             'status' => true,
             'data' => $comment
@@ -78,7 +78,7 @@ class CommentController extends Controller
     {
         $review = Review::findOrFail($reviewId);
         $comment = $review->comments()->findOrFail($commentId);
-        
+
         // Check if the authenticated user is the owner of the comment
         if ($comment->user_id !== Auth::id()) {
             return response()->json([
@@ -86,7 +86,7 @@ class CommentController extends Controller
                 'message' => 'You are not authorized to update this comment'
             ], 403);
         }
-        
+
         $validator = Validator::make($request->all(), [
             'content' => 'required|string',
         ]);
@@ -115,7 +115,7 @@ class CommentController extends Controller
     {
         $review = Review::findOrFail($reviewId);
         $comment = $review->comments()->findOrFail($commentId);
-        
+
         // Check if the authenticated user is the owner of the comment or an admin
         if ($comment->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
             return response()->json([
@@ -123,15 +123,15 @@ class CommentController extends Controller
                 'message' => 'You are not authorized to delete this comment'
             ], 403);
         }
-        
+
         $comment->delete();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Comment deleted successfully'
         ], 200);
     }
-    
+
     /**
      * Like a comment.
      */
@@ -139,9 +139,9 @@ class CommentController extends Controller
     {
         $review = Review::findOrFail($reviewId);
         $comment = $review->comments()->findOrFail($commentId);
-        
+
         $comment->increment('likes_count');
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Comment liked successfully',

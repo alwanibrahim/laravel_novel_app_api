@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
@@ -15,7 +15,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::all();
-        
+
         return response()->json([
             'status' => true,
             'data' => $categories
@@ -56,7 +56,7 @@ class CategoryController extends Controller
     public function show(string $id)
     {
         $category = Category::findOrFail($id);
-        
+
         return response()->json([
             'status' => true,
             'data' => $category
@@ -69,7 +69,7 @@ class CategoryController extends Controller
     public function update(Request $request, string $id)
     {
         $category = Category::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255|unique:categories,name,' . $id,
             'description' => 'nullable|string',
@@ -100,13 +100,13 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
         $category->delete();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Category deleted successfully'
         ], 200);
     }
-    
+
     /**
      * Get novels by category.
      */
@@ -114,7 +114,7 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
         $novels = $category->novels()->with('author')->get();
-        
+
         return response()->json([
             'status' => true,
             'data' => $novels

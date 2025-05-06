@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Author;
@@ -15,7 +15,7 @@ class AuthorController extends Controller
     public function index()
     {
         $authors = Author::all();
-        
+
         return response()->json([
             'status' => true,
             'data' => $authors
@@ -56,7 +56,7 @@ class AuthorController extends Controller
     public function show(string $id)
     {
         $author = Author::findOrFail($id);
-        
+
         return response()->json([
             'status' => true,
             'data' => $author
@@ -69,7 +69,7 @@ class AuthorController extends Controller
     public function update(Request $request, string $id)
     {
         $author = Author::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
@@ -100,13 +100,13 @@ class AuthorController extends Controller
     {
         $author = Author::findOrFail($id);
         $author->delete();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Author deleted successfully'
         ], 200);
     }
-    
+
     /**
      * Get novels by author.
      */
@@ -114,7 +114,7 @@ class AuthorController extends Controller
     {
         $author = Author::findOrFail($id);
         $novels = $author->novels()->with('category')->get();
-        
+
         return response()->json([
             'status' => true,
             'data' => $novels
