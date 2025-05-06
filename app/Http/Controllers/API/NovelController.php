@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Novel;
 use Illuminate\Http\Request;
+use App\Http\Resources\NovelResource;
 use Illuminate\Support\Facades\Validator;
 
 class NovelController extends Controller
@@ -44,10 +45,11 @@ class NovelController extends Controller
         $perPage = $request->per_page ?? 15;
         $novels = $query->paginate($perPage);
 
-        return response()->json([
-            'status' => true,
-            'data' => $novels
-        ], 200);
+        // return response()->json([
+        //     'status' => true,
+        //     'data' => $novels
+        // ], 200);
+        return NovelResource::collection($novels);
     }
 
     /**
