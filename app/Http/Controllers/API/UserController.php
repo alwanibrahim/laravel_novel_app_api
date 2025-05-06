@@ -229,12 +229,11 @@ class UserController extends Controller
             return response()->json(['message' => 'User tidak ditemukan atau belum login'], 400);
         }
 
+        // Ambil email dari user yang terautentikasi
+        $email = $user->email;
 
-        // Validasi email (bisa menggunakan email dari user yang terautentikasi)
-        $request->validate(['email' => 'required|email']);
-
-        $otp = rand(100000, 999999); // OTP 6 digit
-        $email = $request->email;
+        // Buat OTP 6 digit
+        $otp = rand(100000, 999999);
 
         // Simpan atau update OTP di database menggunakan updateOrCreate
         EmailVerification::updateOrCreate(
