@@ -21,6 +21,9 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
+
 
 
 
@@ -46,7 +49,14 @@ class NovelResource extends Resource
                 Textarea::make('description')
                     ->required()
                     ->label('Deskripsi Novel'),
-            SpatieMediaLibraryFileUpload::make('cover_image'),
+             FileUpload::make('cover_image')
+                ->label('Cover Image')
+                ->image()
+                ->directory('cover_images') // Akan disimpan di storage/app/public/cover_images
+                ->disk('public') // Penting: harus "public" untuk bisa diakses
+                ->visibility('public') // Supaya bisa diakses via browser
+                ->imagePreviewHeight('150')
+                ->maxSize(1024), // optional
 
             Select::make('category_id')
                     ->label('Categry')
@@ -71,7 +81,13 @@ class NovelResource extends Resource
             ->label('Tanggal Terbit')
             ->required(),
 
+               Toggle::make('is_featured')
+                ->label('Featured?')
+                ->inline(false)
+                ->default(false)
+
             ]);
+
     }
 
     public static function table(Table $table): Table
@@ -81,11 +97,10 @@ class NovelResource extends Resource
                 TextColumn::make('id')->label('ID')->sortable()->searchable(),
                 TextColumn::make('title')->label('Judul')->sortable()->searchable(),
                 TextColumn::make('description')->label('Deskripsi')->limit(30),
-            ImageColumn::make('cover_image')
+               ImageColumn::make('cover_image')
     ->label('Cover')
-    ->getStateUsing(fn ($record) => $record->getFirstMediaUrl('cover'))
-    ->square(),
-
+    ->getStateUsing(fn ($record) => asset('storage/' . $record->cover_image))
+    ->height(80),
             TextColumn::make('category.name')->label('Kategori'),
                 TextColumn::make('author.name')->label('Penulis'),
                 TextColumn::make('publication_date')->label('Tanggal Terbit')->date(),

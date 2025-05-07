@@ -44,10 +44,10 @@ class TagResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('Nama Tag'),
-                TextColumn::make('description')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Nama Tag'),
+                // TextColumn::make('description')
+                //     ->searchable()
+                //     ->sortable()
+                //     ->label('des'),
                 TextColumn::make('created_at')
                     ->searchable()
                     ->sortable()
