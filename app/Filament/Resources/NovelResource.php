@@ -104,7 +104,7 @@ class NovelResource extends Resource
             TextColumn::make('category.name')->label('Kategori'),
                 TextColumn::make('author.name')->label('Penulis'),
                 TextColumn::make('publication_date')->label('Tanggal Terbit')->date(),
-                TextColumn::make('page_count')->label('Halaman'),
+               
                 TextColumn::make('language')->label('Bahasa')->sortable(),
                 BooleanColumn::make('is_featured')->label('Unggulan'),
                 TextColumn::make('average_rating')->label('Rating'),
