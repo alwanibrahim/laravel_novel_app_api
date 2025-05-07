@@ -45,11 +45,11 @@ class NovelController extends Controller
         $perPage = $request->per_page ?? 15;
         $novels = $query->paginate($perPage);
 
-        // return response()->json([
-        //     'status' => true,
-        //     'data' => $novels
-        // ], 200);
-        return NovelResource::collection($novels);
+        return response()->json([
+            'status' => true,
+            'data' => $novels
+        ], 200);
+        // return NovelResource::collection($novels);
     }
 
     /**

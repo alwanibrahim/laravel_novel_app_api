@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-
-class Novel extends Model
+class Novel extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -82,6 +83,10 @@ class Novel extends Model
         return $this->hasMany(Favorite::class);
     }
 
+    public function favoritesCount()
+    {
+        return $this->favorites()->count();
+    }
     /**
      * Get the reading history entries for the novel.
      */
@@ -104,6 +109,10 @@ class Novel extends Model
     }
 
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('covers')->singleFile();
+    }
 }
 
 

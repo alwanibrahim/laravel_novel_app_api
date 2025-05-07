@@ -29,8 +29,21 @@ class NovelResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             // Menampilkan hanya 'name' dari relasi 'author'
-            'author' => $this->author->name,  // Hanya 'name' yang akan ditampilkan
-            'category' => $this->category->name,
+            'author' => [
+                [
+                    'id' => $this->author->id,
+                    'name' => $this->author->name,
+                    'bio' => $this->author->bio,
+                ]
+            ],  // Membuat author menjadi array (list)
+
+            // Menjadikan category sebagai array meskipun hanya ada satu objek
+            'category' => [
+                [
+                    'id' => $this->category->id,
+                    'name' => $this->category->name,
+                ]
+            ],  // Membu
             'favorites'=> $this->favorites,
             'reviews' => $this->reviews
         ];
