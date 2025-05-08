@@ -100,7 +100,7 @@
 <body>
     <div id="canvas-container"></div>
     <div class="loading-container">
-        <div class="app-name">NOVEL LARAVEL</div>
+        <div class="app-name">Mamam Novel</div>
         <div class="loading-text">Memuat konten...</div>
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>

@@ -41,29 +41,19 @@ class AuthorResource extends Resource
                     ->maxLength(255)
                     ->label('Nama Penulis'),
 
-                FileUpload::make('photo')
-                    ->image()
-                    ->directory('authors/photos')
-                    ->visibility('public')
-                    ->label('Foto Profil'),
+                   FileUpload::make('profile_picture')
+                ->label('Photo Profile')
+                ->image()
+                ->directory('profile_picture') // Akan disimpan di storage/app/public/cover_images
+                ->disk('public') // Penting: harus "public" untuk bisa diakses
+                ->visibility('public') // Supaya bisa diakses via browser
+                ->imagePreviewHeight('150')
+                ->maxSize(1024), // optional
 
                 Textarea::make('bio')
                     ->columnSpanFull()
                     ->label('Biografi'),
 
-                DatePicker::make('birth_date')
-                    ->label('Tanggal Lahir'),
-
-
-
-                TextInput::make('email')
-                    ->email()
-                    ->unique(ignoreRecord: true)
-                    ->label('Email'),
-
-                TextInput::make('website')
-                    ->url()
-                    ->label('Website'),
 
 
             ]);
@@ -73,9 +63,11 @@ class AuthorResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('photo')
-                    ->circular()
-                    ->label('Foto'),
+
+                  ImageColumn::make('profile_picture')
+    ->label('Profile Picture')
+    ->getStateUsing(fn ($record) => asset('storage/' . $record->profile_picture))
+    ->height(80),
 
 
                 TextColumn::make('name')
