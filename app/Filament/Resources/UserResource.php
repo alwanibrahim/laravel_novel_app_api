@@ -16,6 +16,8 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
 
 class UserResource extends Resource
 {
@@ -37,6 +39,16 @@ class UserResource extends Resource
                 TextInput::make('username')
                     ->required()
                     ->label('Username'),
+
+
+                    FileUpload::make('profile_picture')
+                    ->label('Photo Profile')
+                    ->image()
+                    ->directory('profile_picture') // Akan disimpan di storage/app/public/cover_images
+                    ->disk('public') // Penting: harus "public" untuk bisa diakses
+                    ->visibility('public') // Supaya bisa diakses via browser
+                    ->imagePreviewHeight('150')
+                    ->maxSize(1024), // optional
 
                 TextInput::make('email')
                     ->email()
@@ -66,6 +78,10 @@ class UserResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                    ImageColumn::make('profile_picture')
+                    ->label('Profile Picture')
+                    ->getStateUsing(fn ($record) => asset('storage/' . $record->profile_picture))
+                    ->height(80),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable()
@@ -129,6 +145,7 @@ class UserResource extends Resource
                     ->label('Belum Terverifikasi'),
             ])
             ->actions([
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

@@ -7,6 +7,8 @@ use App\Models\ReadingHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Chapter;
+
 
 class ReadingHistoryController extends Controller
 {
@@ -16,7 +18,15 @@ class ReadingHistoryController extends Controller
     public function index()
     {
         $readingHistory = Auth::user()->readingHistory()
-            ->with(['novel', 'chapter','user'])
+            ->with([
+                'novel.author',
+                'novel.category',
+                'novel.favorites.user',
+                'novel.reviews.user',
+                'novel.chapters',
+                'chapter',
+                'user'
+            ])
             ->orderBy('last_read_at', 'desc')
             ->get();
 
@@ -25,6 +35,7 @@ class ReadingHistoryController extends Controller
             'data' => $readingHistory
         ], 200);
     }
+
 
     /**
      * Get user's reading history for a specific novel.
@@ -52,10 +63,11 @@ class ReadingHistoryController extends Controller
     /**
      * Update user's reading progress.
      */
-    public function update(Request $request, string $novelId)
+    public function store(Request $request, string $novelId)
     {
+        // Validasi kiriman chapter_number, bukan chapter_id
         $validator = Validator::make($request->all(), [
-            'chapter_id' => 'required|exists:chapters,id',
+            'chapter_number' => 'required|exists:chapters,chapter_number',
             'last_page_read' => 'nullable|integer|min:1',
             'progress_percentage' => 'nullable|numeric|min:0|max:100',
         ]);
@@ -68,10 +80,23 @@ class ReadingHistoryController extends Controller
             ], 422);
         }
 
+        // Cari ID chapter dari chapter_number
+        $chapter = Chapter::where('novel_id', $novelId)
+        ->where('chapter_number', $request->chapter_number)
+        ->first();
+
+
+        if (!$chapter) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Chapter tidak ditemukan.'
+            ], 404);
+        }
+
         $data = [
             'user_id' => Auth::id(),
             'novel_id' => $novelId,
-            'chapter_id' => $request->chapter_id,
+            'chapter_id' => $chapter->id, // gunakan ID asli
         ];
 
         $attributes = [
@@ -88,6 +113,63 @@ class ReadingHistoryController extends Controller
             'data' => $readingHistory
         ], 200);
     }
+
+    public function update(Request $request, string $novelId)
+{
+    // Validasi kiriman chapter_number, bukan chapter_id
+    $validator = Validator::make($request->all(), [
+        'chapter_number' => 'required|exists:chapters,chapter_number',
+        'last_page_read' => 'nullable|integer|min:1',
+        'progress_percentage' => 'nullable|numeric|min:0|max:100',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    // Cari ID chapter dari chapter_number
+    $chapter = Chapter::where('novel_id', $novelId)
+        ->where('chapter_number', $request->chapter_number)
+        ->first();
+
+
+    if (!$chapter) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Chapter tidak ditemukan.'
+        ], 404);
+    }
+
+    // Cek apakah reading history sudah ada
+    $readingHistory = ReadingHistory::where('user_id', Auth::id())
+        ->where('novel_id', $novelId)
+        ->where('chapter_id', $chapter->id)
+        ->first();
+
+    if (!$readingHistory) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Reading history tidak ditemukan.'
+        ], 404);
+    }
+
+    // Update data yang sudah ada
+    $readingHistory->update([
+        'last_page_read' => $request->last_page_read ?? $readingHistory->last_page_read,
+        'progress_percentage' => $request->progress_percentage ?? $readingHistory->progress_percentage,
+        'last_read_at' => now(),
+    ]);
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Reading history berhasil diperbarui',
+        'data' => $readingHistory
+    ], 200);
+}
 
     /**
      * Remove the specified reading history.

@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "dedoc/scramble": "^0.12.19",
         "filament/filament": "^3.3",
         "filament/spatie-laravel-media-library-plugin": "^3.3",
         "fortawesome/font-awesome": "^6.7",
@@ -15,6 +16,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.10.1",
+        "league/commonmark": "2.7",
         "sendgrid/sendgrid": "^8.1",
         "spatie/laravel-medialibrary": "^11.12"
     },

@@ -177,6 +177,27 @@ class ReviewController extends Controller
         ], 200);
     }
 
+    public function myReviews()
+    {
+        $reviews = Review::with([
+                'novel.author',
+                'novel.category',
+                'novel.favorites.user',
+                'novel.reviews.user',
+                'novel.chapters',
+                'user'
+            ])
+            ->where('user_id', Auth::id())
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'My reviewed novels',
+            'data' => $reviews
+        ], 200);
+    }
+
+
     /**
      * Update novel's average rating.
      */

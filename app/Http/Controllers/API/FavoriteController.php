@@ -15,7 +15,16 @@ class FavoriteController extends Controller
      */
     public function index()
     {
-        $favorites = Auth::user()->favorites()->with('novel.author')->get();
+        $favorites = Auth::user()->favorites()
+    ->with([
+        'novel.author',
+        'novel.category',
+        'novel.favorites.user',
+        'novel.reviews.user',
+        'novel.chapters'
+    ])
+    ->get();
+
 
         return response()->json([
             'status' => true,

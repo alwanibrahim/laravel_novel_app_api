@@ -98,7 +98,7 @@ class UserController extends Controller
             'email' => 'nullable|string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8',
             'bio' => 'nullable|string',
-            'profile_picture' => 'nullable|string',
+            'profile_picture' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
             'phone_number' => 'nullable|string',
             'role' => 'nullable|in:user,admin,moderator',
             'is_active' => 'nullable|boolean',
@@ -132,9 +132,17 @@ class UserController extends Controller
             $user->bio = $request->bio;
         }
 
-        if ($request->has('profile_picture')) {
-            $user->profile_picture = $request->profile_picture;
-        }
+        if ($request->hasFile('profile_picture')) {
+    // Hapus gambar lama jika ada
+    if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+        Storage::disk('public')->delete($user->profile_picture);
+    }
+
+    // Simpan file baru ke storage/app/public/profile_pictures
+    $path = $request->file('profile_picture')->store('profile_picture', 'public');
+    $user->profile_picture = $path;
+}
+
 
         if ($request->has('phone_number')) {
             $user->phone_number = $request->phone_number;

@@ -15,7 +15,7 @@ class NovelController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Novel::with(['author', 'category', 'favorites.user' ,'reviews.user']);
+        $query = Novel::with(['author', 'category', 'favorites.user' ,'reviews.user','chapters']);
 
         // Filter by category
         if ($request->has('category_id')) {
@@ -42,11 +42,12 @@ class NovelController extends Controller
         }
 
         // Pagination
-        $perPage = $request->per_page ?? 15;
+        $perPage = $request->per_page ?? 20;
         $novels = $query->paginate($perPage);
 
         return response()->json([
             'status' => true,
+
             'data' => $novels
         ], 200);
         // return NovelResource::collection($novels);
@@ -104,7 +105,7 @@ class NovelController extends Controller
      */
     public function show(string $id)
     {
-        $novel = Novel::with(['author', 'category', 'tags', 'chapters'])->findOrFail($id);
+        $novel = Novel::with(['author', 'category', 'tags', 'chapters','favorites.user' ,'reviews.user'])->findOrFail($id);
 
         // Increment view count
         $novel->increment('view_count');
@@ -178,7 +179,13 @@ class NovelController extends Controller
     public function featured()
     {
         $novels = Novel::where('is_featured', true)
-            ->with(['author', 'category'])
+            ->with([
+                'author',
+                'category',
+                'favorites.user',
+                'reviews.user',
+                'chapters'
+            ])
             ->get();
 
         return response()->json([
@@ -186,6 +193,7 @@ class NovelController extends Controller
             'data' => $novels
         ], 200);
     }
+
 
     /**
      * Search novels by title or description.
@@ -223,7 +231,7 @@ class NovelController extends Controller
     public function byCategory(string $categoryId)
     {
         $novels = Novel::where('category_id', $categoryId)
-            ->with(['author', 'category'])
+            ->with(['author', 'category','favorites.user' ,'reviews.user','chapters'])
             ->get();
 
         return response()->json([
@@ -263,4 +271,20 @@ class NovelController extends Controller
             'data' => $novels
         ], 200);
     }
+
+    public function getByIds(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'integer'
+    ]);
+
+    $novels = Novel::whereIn('id', $request->ids)->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => $novels,
+    ]);
+}
+
 }

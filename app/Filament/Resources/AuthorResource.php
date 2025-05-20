@@ -12,10 +12,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -74,10 +74,12 @@ class AuthorResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('Nama'),
-                TextColumn::make('bio')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Bio'),
+             TextColumn::make('bio')
+    ->label('Bio')
+    ->limit(50) // Batasi tampilan sampai 50 karakter
+    ->tooltip(fn ($record) => $record->bio) // Tampilkan bio lengkap saat hover
+    ->searchable()
+    ->sortable(),
 
                 TextColumn::make('novels_count')
                     ->counts('novels')
@@ -94,20 +96,7 @@ class AuthorResource extends Resource
                     ->label('Tanggal Bergabung'),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'active' => 'Aktif',
-                        'inactive' => 'Tidak Aktif',
-                        'featured' => 'Direkomendasikan',
-                    ])
-                    ->label('Status'),
 
-                TernaryFilter::make('has_novels')
-                    ->queries(
-                        true: fn(Builder $query) => $query->whereHas('novels'),
-                        false: fn(Builder $query) => $query->whereDoesntHave('novels'),
-                    )
-                    ->label('Memiliki Novel'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

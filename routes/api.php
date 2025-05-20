@@ -97,6 +97,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::get('/user-activity-summary', [UserController::class, 'summary']);
+    Route::post('/novels/by-ids', [NovelController::class, 'getByIds']);
+    Route::get('/my-review', [ReviewController::class, 'myReviews']);
+    Route::ApiResource('users', UserController::class);
+
+
 });
 
 // Protected routes
@@ -107,7 +112,6 @@ Route::middleware('auth:sanctum', EnsureEmailIsVerified::class)->group(function 
     // Route::get('/user', [AuthController::class, 'user']);
 
     // Users
-    Route::ApiResource('users', UserController::class);
 
     // Novels (protected actions)
     Route::post('/novels', [NovelController::class, 'store']);
@@ -155,7 +159,8 @@ Route::middleware('auth:sanctum', EnsureEmailIsVerified::class)->group(function 
     // Reading History
     Route::get('/reading-history', [ReadingHistoryController::class, 'index']);
     Route::get('/reading-history/{novelId}', [ReadingHistoryController::class, 'show']);
-    Route::post('/reading-history/{novelId}', [ReadingHistoryController::class, 'update']);
+    Route::post('/reading-history/{novelId}', [ReadingHistoryController::class, 'store']);
+    Route::put('/reading-history/{novelId}', [ReadingHistoryController::class, 'update']);
     Route::delete('/reading-history/{novelId}', [ReadingHistoryController::class, 'destroy']);
     Route::delete('/reading-history', [ReadingHistoryController::class, 'clearAll']);
 

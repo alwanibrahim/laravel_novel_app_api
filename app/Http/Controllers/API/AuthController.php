@@ -18,46 +18,41 @@ class AuthController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:255|unique:users',
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'username' => 'required|string|max:255|unique:users',
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $user = User::create([
-            'username' => $request->username,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $isVerified = !is_null($user->email_verified_at); // <--- tambahkan ini
-        $token = $user->createToken('auth_token')->plainTextToken;
-        // untuk kirim verifikasi email
-        app(EmailVerificationController::class)->sendOtpManually($user);
-
-
-
+    if ($validator->fails()) {
         return response()->json([
-            'status' => true,
-            'message' => 'User registered successfully',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-                'is_verified' => $isVerified
-            ]
-        ], 201);
+            'status' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    $user = User::create([
+        'username' => $request->username,
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'status' => true,
+        'message' => 'User registered successfully',
+        'data' => [
+            'user' => $user,
+            'token' => $token,
+            'is_verified' => false // karena tidak langsung diverifikasi
+        ]
+    ], 201);
+}
 
     /**
      * Login user and create token.
