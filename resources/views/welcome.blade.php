@@ -8,98 +8,139 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #111827;
-            font-family: 'Arial', sans-serif;
+            background-color: #18181b; /* Zinc-900, hitam sebagai background utama */
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        .loading-container {
-            position: fixed;
-            left: 0;
-            bottom: 10%;
-            width: 100%;
+
+        .splash-container {
             text-align: center;
-            z-index: 2;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
         }
-        .app-name {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #4f46e5, #8b5cf6, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
+
+        .logo-container {
+            margin-bottom: 2rem;
+            position: relative;
         }
-        .loading-text {
-            font-size: 1.2rem;
-            color: #e2e8f0;
-            margin-bottom: 15px;
-        }
-        .progress-container {
-            width: 250px;
-            height: 6px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+
+        .book-image {
+            width: 120px;
+            height: 150px;
             margin: 0 auto;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            position: relative;
         }
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4f46e5, #8b5cf6, #ec4899);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-            position: relative;
-        }
-        .progress-bar::after {
-            content: '';
+
+        .book-cover {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg,
-                rgba(255,255,255,0) 0%,
-                rgba(255,255,255,0.5) 50%,
-                rgba(255,255,255,0) 100%);
-            animation: shine 1.5s infinite;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            border-radius: 4px 4px 4px 4px;
         }
-        .progress-percentage {
-            font-size: 0.9rem;
-            color: #e2e8f0;
-            margin-top: 10px;
-        }
-        .particles {
-            position: fixed;
+
+        .book-spine {
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 15px;
             height: 100%;
-            z-index: 0;
-            pointer-events: none;
+            background: linear-gradient(to right, #4338ca, #4f46e5);
+            border-radius: 4px 0 0 4px;
         }
-        @keyframes shine {
-            0% {
-                transform: translateX(-100%);
-            }
-            100% {
-                transform: translateX(100%);
-            }
+
+        .book-pages {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            bottom: 5px;
+            width: 100px;
+            background-color: #f8fafc;
+            border-radius: 2px;
+        }
+
+        .book-line {
+            position: absolute;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+            width: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .line-1 { top: 30px; }
+        .line-2 { top: 50px; }
+        .line-3 { top: 70px; }
+        .line-4 { top: 90px; }
+
+        .app-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+            border-radius: 3px;
+            transition: width 0.2s ease;
+        }
+
+        .progress-percentage {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-top: 0.75rem;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <div id="canvas-container"></div>
-    <div class="loading-container">
+    <div class="splash-container">
+        <div class="logo-container">
+            <div class="book-image">
+                <div class="book-spine"></div>
+                <div class="book-pages"></div>
+                <div class="book-cover">
+                    <div class="book-line line-1"></div>
+                    <div class="book-line line-2"></div>
+                    <div class="book-line line-3"></div>
+                    <div class="book-line line-4"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="app-name">Mamam Novel</div>
         <div class="loading-text">Memuat konten...</div>
         <div class="progress-container">
@@ -108,125 +149,12 @@
         <div class="progress-percentage" id="progress-percentage">0%</div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Three.js setup
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 2);
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(1, 1, 1);
-        scene.add(directionalLight);
-
-        // Book geometry
-        const createBook = () => {
-            const bookGroup = new THREE.Group();
-
-            // Book cover
-            const coverGeometry = new THREE.BoxGeometry(5, 7, 0.5);
-            const coverMaterial = new THREE.MeshPhongMaterial({
-                color: 0x4f46e5,
-                specular: 0x555555,
-                shininess: 30
-            });
-            const cover = new THREE.Mesh(coverGeometry, coverMaterial);
-            bookGroup.add(cover);
-
-            // Book pages
-            const pagesGeometry = new THREE.BoxGeometry(4.8, 6.8, 0.4);
-            const pagesMaterial = new THREE.MeshPhongMaterial({
-                color: 0xffffff,
-                specular: 0x222222,
-                shininess: 10
-            });
-            const pages = new THREE.Mesh(pagesGeometry, pagesMaterial);
-            pages.position.z = 0.05;
-            bookGroup.add(pages);
-
-            // Book title
-            const titleGeometry = new THREE.PlaneGeometry(4, 1);
-            const titleMaterial = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.8
-            });
-            const title = new THREE.Mesh(titleGeometry, titleMaterial);
-            title.position.z = 0.26;
-            title.position.y = 1.5;
-            bookGroup.add(title);
-
-            return bookGroup;
-        };
-
-        const book = createBook();
-        scene.add(book);
-
-        // Particles
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 500;
-
-        const posArray = new Float32Array(particlesCount * 3);
-
-        for(let i = 0; i < particlesCount * 3; i++) {
-            // Random positions for particles in a sphere around the book
-            posArray[i] = (Math.random() - 0.5) * 50;
-        }
-
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-
-        const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.1,
-            color: 0x8b5cf6,
-            transparent: true,
-            opacity: 0.8,
-            sizeAttenuation: true
-        });
-
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-
-        // Camera position
-        camera.position.z = 10;
-
-        // Animation function
-        const animate = () => {
-            requestAnimationFrame(animate);
-
-            // Rotate the book
-            book.rotation.y += 0.01;
-            book.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
-
-            // Animate particles
-            particlesMesh.rotation.y += 0.001;
-
-            renderer.render(scene, camera);
-        };
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Start animation
-        animate();
-
-        // Progress bar animation
+        // Sederhana loading bar tanpa animasi kompleks
         const progressBar = document.getElementById('progress-bar');
         const progressPercentage = document.getElementById('progress-percentage');
         let progress = 0;
-        const loadingDuration = 3500; // 3.5 seconds
+        const loadingDuration = 3000; // 3 detik
         const intervalTime = 30;
         const totalSteps = loadingDuration / intervalTime;
         const progressIncrement = 100 / totalSteps;

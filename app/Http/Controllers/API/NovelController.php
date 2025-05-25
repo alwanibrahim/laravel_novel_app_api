@@ -42,8 +42,10 @@ class NovelController extends Controller
         }
 
         // Pagination
-        $perPage = $request->per_page ?? 20;
-        $novels = $query->paginate($perPage);
+        // $perPage = $request->per_page ?? 20;
+        // $novels = $query->paginate($perPage);
+        $novels = $query->get();
+
 
         return response()->json([
             'status' => true,
